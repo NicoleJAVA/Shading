@@ -1,0 +1,7 @@
+#Nicole 
+#folder-creation under VC_project\CG_HW1\CG_HW1 : 
+#Nicole hand-created two folders, "lib" and "include".
+#Nicole copied (1)OpenGL32.lib; (2)glew.lib; (3)freeglut.lib, etc into "lib" folder.
+#Nicole copied (1)GL folder (2)glm folder (3)other header files given by TA,etc,into "lib" folder.
+#Nicole copied (1)GL.h (2)glew.h (3)glut.h (4)freeglut.h, etc ingo "include" foler.
+#Finally, Nicole gave up, and she copied everything given by TA ( except "include" and "lib" folder ) into CG_HW1 folder.
