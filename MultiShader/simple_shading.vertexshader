@@ -20,7 +20,7 @@ uniform vec3 lightColor;
 void main(){
     
 	//output clipping position to rasterizer
-	gl_Position = ViewMatrix * ModelMatrix * vec4(vertexPosition_modelspace, 1.0);
+	gl_Position = ViewMatrix *  ModelMatrix * vec4(vertexPosition_modelspace, 1.0);
 
 	//compute light direction at each vertex
 	vec3 vertexPosition_cameraspace = ( ViewMatrix * ModelMatrix * vec4( vertexPosition_modelspace, 1.0 ) ).xyz;
@@ -34,15 +34,23 @@ void main(){
 	//compute the angle between normal and light direction
 	vec3 L = normalize(lightDirection_cameraspace);
 	vec3 N = normalize(normal_cameraspace);
+	
+
+	vec3 R = normalize(reflect(-L, N));
 	float cosTheta = max( dot(L, N), 0.0 );
+	float cosTheta2 = max( dot(N, R), 0.0 );
 
 	//compute ambient color
 	vec3 ambientColor = 0.1 * vertexColor;
+	// ambient = Ia x ( Ka x Obj )
 
 	//compute diffuse color
 	vec3 diffuseColor = vertexColor * lightColor * cosTheta;
-
+	// diffuse = Ip x ( Kd x Obj )x cos
+ 
+	vec3 specularColor = 1.1 * lightColor * pow( cosTheta2, 5.0);
+	// ( Ks x Ip ) x cos^n
+	
 	//output fragmentColor
-	fragmentColor = ambientColor + diffuseColor;
-
+	fragmentColor = ambientColor + diffuseColor + specularColor;	
 }

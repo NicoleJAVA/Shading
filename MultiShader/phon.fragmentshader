@@ -1,0 +1,52 @@
+
+#version 120
+
+// Input vertex data, different for all executions of this shader.
+attribute vec3 vertexPosition_modelspace;
+attribute vec3 vertexColor;
+attribute vec3 vertexNormal_modelspace;
+
+// varying: interpolate on fragments
+varying vec3 normalDirectionVarying;
+
+// constant for the whole mesh
+uniform mat4 NormalMatrix;
+uniform mat4 ModelMatrix;
+uniform mat4 ViewMatrix;
+uniform vec3 lightPosition_worldspace;
+uniform vec3 lightColor;
+
+void main(){
+
+	//compute light direction at each vertex
+	vec3 vertexPosition_cameraspace = ( ViewMatrix * ModelMatrix * vec4( vertexPosition_modelspace, 1.0 ) ).xyz;
+	vec3 lightPosition_cameraspace = ( ViewMatrix * vec4( lightPosition_worldspace, 1.0 ) ).xyz;
+	vec3 viewDirection_cameraspace = -vertexPosition_cameraspace;
+	vec3 lightDirection_cameraspace = viewDirection_cameraspace + lightPosition_cameraspace;
+
+	//compute normal in camera space
+	vec3 normal_cameraspace = ( NormalMatrix * vec4( vertexNormal_modelspace, 0.0 ) ).xyz;
+
+	//compute the angle between normal and light direction
+	vec3 L = normalize(lightDirection_cameraspace);
+	vec3 N = normalize(normal_cameraspace);
+	
+
+	vec3 R = normalize(reflect(-L, N));
+	float cosTheta = max( dot(L, N), 0.0 );
+	float cosTheta2 = max( dot(N, R), 0.0 );
+
+	//compute ambient color
+	vec3 ambientColor = 0.1 * vertexColor;
+	// ambient = Ia x ( Ka x Obj )
+
+	//compute diffuse color
+	vec3 diffuseColor = vertexColor * lightColor * cosTheta;
+	// diffuse = Ip x ( Kd x Obj )x cos
+ 
+	vec3 specularColor = 1.1 * lightColor * pow( cosTheta2, 5.0);
+	// ( Ks x Ip ) x cos^n
+	
+	//output fragmentColor
+	fragmentColor = ambientColor + diffuseColor + specularColor;	
+}

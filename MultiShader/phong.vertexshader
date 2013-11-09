@@ -1,0 +1,37 @@
+//A vertex shader for "incomplete" gauraud shading
+//You need to implement specular color computation by yourself in this shader 
+#version 120
+
+// Input vertex data, different for all executions of this shader.
+attribute vec3 vertexPosition_modelspace;
+attribute vec3 vertexColor;
+attribute vec3 vertexNormal_modelspace;
+
+// varying: interpolate on fragments
+varying vec3 normalDirectionVarying;
+
+// constant for the whole mesh
+uniform mat4 NormalMatrix;
+uniform mat4 ModelMatrix;
+uniform mat4 ViewMatrix;
+uniform vec3 lightPosition_worldspace;
+uniform vec3 lightColor;
+
+void main(){
+    
+	//output clipping position to rasterizer
+	gl_Position = ViewMatrix *  ModelMatrix * vec4(vertexPosition_modelspace, 1.0);
+
+	//compute light direction at each vertex
+	//vec3 vertexPosition_cameraspace = ( ViewMatrix * ModelMatrix * vec4( vertexPosition_modelspace, 1.0 ) ).xyz;
+	//vec3 lightPosition_cameraspace = ( ViewMatrix * vec4( lightPosition_worldspace, 1.0 ) ).xyz;
+	//vec3 viewDirection_cameraspace = -vertexPosition_cameraspace;
+	//vec3 lightDirection_cameraspace = viewDirection_cameraspace + lightPosition_cameraspace;
+
+	//compute normal in camera space
+	vec3 normal_cameraspace = ( NormalMatrix * vec4( vertexNormal_modelspace, 0.0 ) ).xyz;
+	normalDirectionVarying = normalize( normal_cameraspace );
+
+
+
+}
