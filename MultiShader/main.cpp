@@ -38,11 +38,16 @@ int main( void )
 	// Accept fragment if it closer to the camera than the former one
 	glDepthFunc(GL_LESS); 
 
+
+
 	//==================From here is your implementation ==========================//
+
+
 
 	// Create and compile our GLSL program from the shaders. Todo: load shader
 	GLuint programID = LoadShaders("simple_shading.vertexshader", "simple_shading.fragmentshader");
 	GLuint programID2 = LoadShaders("simple_shading.vertexshader", "simple_shading.fragmentshader");
+	GLuint programID3 = LoadShaders("simple_shading.vertexshader", "simple_shading.fragmentshader");
 
 
 					/************************/
@@ -64,8 +69,7 @@ int main( void )
 	// Load your scene
 	TRIModel model;
 	model.loadFromFile("models/Balls.tri");
-	
-    
+	    
 	/*** Here shows an exmple which generates three different vertex buffers for vertices, colors, normals.***/
 	//However, you can always incorporate them together in a single buffer.(Hint: use glBufferSubData)
 
@@ -88,7 +92,6 @@ int main( void )
 					/************************/
 						//The second object
 					/************************/
-	
 
 	// Get a handle for uniform variables such as matrices, lights, ....
 	GLuint ModelMatrixID2 = glGetUniformLocation(programID2, "ModelMatrix");
@@ -122,6 +125,41 @@ int main( void )
 	glBufferData(GL_ARRAY_BUFFER, model2.vertices.size() * sizeof(vec3), &model2.normals[0], GL_STATIC_DRAW);
 
 
+					/************************/
+						//The third object
+					/************************/
+	
+
+	// Get a handle for uniform variables such as matrices, lights, ....
+	GLuint ModelMatrixID3 = glGetUniformLocation(programID3, "ModelMatrix");
+	GLuint ViewMatrixID3 = glGetUniformLocation(programID3, "ViewMatrix");
+	GLuint NormalMatrixID3 = glGetUniformLocation(programID3, "NormalMatrix");
+	GLuint lightPosition_worldspaceID3 = glGetUniformLocation(programID3, "lightPosition_worldspace");
+	GLuint lightColorID3 = glGetUniformLocation(programID3, "lightColor");
+
+	// Get a handle for vertex attribute arrays such as vertex positions, colors, normals, ....
+	GLuint vertexPosition_modelspaceID3 = glGetAttribLocation(programID3, "vertexPosition_modelspace");
+	GLuint vertexColorID3 = glGetAttribLocation(programID3, "vertexColor");
+	GLuint vertexNormal_modelspaceID3 = glGetAttribLocation(programID3, "vertexNormal_modelspace");
+
+	// Load your scene
+	TRIModel model3;
+	model3.loadFromFile("models/Balls.tri");
+	
+	GLuint vertexbuffer3;
+	glGenBuffers(1, &vertexbuffer3);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer3);
+	glBufferData(GL_ARRAY_BUFFER, model3.vertices.size() * sizeof(vec3), &model3.vertices[0], GL_STATIC_DRAW);
+
+	GLuint colorbuffer3;
+	glGenBuffers(1, &colorbuffer3);
+	glBindBuffer(GL_ARRAY_BUFFER, colorbuffer3);
+	glBufferData(GL_ARRAY_BUFFER, model3.vertices.size() * sizeof(vec3), &model3.foreColors[0], GL_STATIC_DRAW);
+
+	GLuint normalbuffer3;
+	glGenBuffers(1, &normalbuffer3);
+	glBindBuffer(GL_ARRAY_BUFFER, normalbuffer3);
+	glBufferData(GL_ARRAY_BUFFER, model3.vertices.size() * sizeof(vec3), &model3.normals[0], GL_STATIC_DRAW);
 
 
 	/*******************************************************************/
@@ -129,17 +167,20 @@ int main( void )
 
 	GLfloat rotZ = 0;
 	GLfloat rotZ2 = 0;
+	GLfloat rotZ3 = 0;
+
+
+					/************************
+						 Enter while-loop.
+					/************************/
+
     while (!glfwWindowShouldClose(window))
     {
-
-					/************************/
-		
-					//    while loop 
-					//    first object
-
+					/************************
+					     while loop :
+					     first object.
 					/************************/
 	
-
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
 		//Tell OpenGL to use the shader program 
@@ -153,6 +194,7 @@ int main( void )
 		ModelMatrix = rotate( ModelMatrix, rotZ, vec3(0.0, 0.0, 1.0) );
 		ModelMatrix = scale( ModelMatrix, vec3(0.001, 0.001, 0.001) );
 		ModelMatrix = translate(ModelMatrix, -vec3(model.center[0], model.center[1], model.center[2]));
+		
 		// compute vertex normal in camera space (transpose of inverse View * Model)
 		// You can compute it in GLSL if your GPU support OpenGL 3.x
 		mat4 NormalMatrix = transpose( inverse(ViewMatrix * ModelMatrix) );
@@ -220,11 +262,12 @@ int main( void )
 		rotZ += 0.1;
 
 
-					/************************/
-		
-					//   The second object
-
-					/************************/
+				/***************************
+				/*
+				/*      while-loop:
+				/*      The second object.
+				/*
+				/***************************/
 
 
 		//Tell OpenGL to use the shader program 
@@ -298,17 +341,98 @@ int main( void )
 		glDisableVertexAttribArray(vertexPosition_modelspaceID2);
 		glDisableVertexAttribArray(vertexColorID2);
 		glDisableVertexAttribArray(vertexNormal_modelspaceID2);
+        //glfwSwapBuffers(window);
+        //glfwPollEvents();
+		
+		//update rotate angle
+		rotZ2 += 0.16;
+
+
+
+					/************************
+		
+					   while-loop : 
+					   The third object.
+
+					/************************/
+
+
+		//Tell OpenGL to use the shader program 
+		glUseProgram(programID3);
+		
+		//send matrix to shader: You can use the keyboard and mouse to close the window and control the transformation
+		//		                 (See computeMatricesFromKey(window) )
+		mat4 ViewMatrix3 = lookAt( vec3(0, 0, 1), vec3(0, 0, 0), vec3(0, 1.0, 0.0) );
+		//move object to the world origin
+		mat4 ModelMatrix3 = translate(mat4(1.0),vec3(0.0,0.5,0.0));
+		ModelMatrix3 = rotate( ModelMatrix3, rotZ3, vec3(0.0, 0.0, 1.0) );
+		ModelMatrix3 = scale( ModelMatrix3, vec3(0.001, 0.001, 0.001) );
+		ModelMatrix3 = translate(ModelMatrix3, -vec3(model3.center[0], model3.center[1], model3.center[2]));
+
+		// compute vertex normal in camera space (transpose of inverse View * Model)
+		// You can compute it in GLSL if your GPU support OpenGL 3.x
+		mat4 NormalMatrix3 = transpose( inverse(ViewMatrix3 * ModelMatrix3) );
+		glUniformMatrix4fv(ViewMatrixID3, 1, GL_FALSE, &ViewMatrix3[0][0]);
+		glUniformMatrix4fv(ModelMatrixID3, 1, GL_FALSE, &ModelMatrix3[0][0]);
+		glUniformMatrix4fv(NormalMatrixID3, 1, GL_FALSE, &NormalMatrix3[0][0]);
+
+		//send lights to shader
+		vec3 lightPosition3 = vec3(4, 4, 4);
+		vec3 lightColor3 = vec3(1.0, 1.0, 1.0);
+		glUniform3f(lightPosition_worldspaceID3, lightPosition3.x, lightPosition3.y, lightPosition3.z);
+		glUniform3f(lightColorID3, lightColor3.r, lightColor3.g, lightColor3.b);
+	
+		//define an vertex attribute array on the vertex buffer
+		glEnableVertexAttribArray(vertexPosition_modelspaceID3);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer3);
+		glVertexAttribPointer(
+			vertexPosition_modelspaceID3, // The attribute we want to configure
+			3,                  // size
+			GL_FLOAT,           // type
+			GL_FALSE,           // normalized?
+			0,                  // stride
+			(void*) 0           // array buffer offset
+		);
+
+		//define an vertex attribute array on the color buffer
+		glEnableVertexAttribArray(vertexColorID3);
+		glBindBuffer(GL_ARRAY_BUFFER, colorbuffer3);
+		glVertexAttribPointer(
+			vertexColorID3, // The attribute we want to configure
+			3,                  // size
+			GL_FLOAT,           // type
+			GL_FALSE,           // normalized?
+			0,                  // stride
+			(void*) 0           // array buffer offset
+		);
+
+		//define an vertex attribute array on the normal buffer
+		glEnableVertexAttribArray(vertexNormal_modelspaceID3);
+		glBindBuffer(GL_ARRAY_BUFFER, normalbuffer3);
+		glVertexAttribPointer(
+			vertexNormal_modelspaceID3, // The attribute we want to configure
+			3,                  // size
+			GL_FLOAT,           // type
+			GL_FALSE,           // normalized?
+			0,                  // stride
+			(void*) 0           // array buffer offset
+		);
+
+		//draw the scene by vertex attribute arrays
+		glDrawArrays(GL_TRIANGLES, 0, model3.vertices.size());
+		glDisableVertexAttribArray(vertexPosition_modelspaceID3);
+		glDisableVertexAttribArray(vertexColorID3);
+		glDisableVertexAttribArray(vertexNormal_modelspaceID3);
         glfwSwapBuffers(window);
         glfwPollEvents();
 		
 		//update rotate angle
-		rotZ2 += 0.1;
-
-
+		rotZ3 += 0.07;
     }
-
-
-
+	
+					/************************
+					    End of while-loop
+					/************************/
 
 
 
@@ -317,12 +441,24 @@ int main( void )
 	glDeleteBuffers(1, &colorbuffer);
 	glDeleteBuffers(1, &normalbuffer);
 	glDeleteProgram(programID);
+	// Cleanup VBO and shader
+	glDeleteBuffers(1, &vertexbuffer2);
+	glDeleteBuffers(1, &colorbuffer2);
+	glDeleteBuffers(1, &normalbuffer2);
+	glDeleteProgram(programID2);
+	// Cleanup VBO and shader
+	glDeleteBuffers(1, &vertexbuffer3);
+	glDeleteBuffers(1, &colorbuffer3);
+	glDeleteBuffers(1, &normalbuffer3);
+	glDeleteProgram(programID3);
+
 
 	//===================Stop your implementation here ================================//
 
+
+
     glfwDestroyWindow(window);
     glfwTerminate();
-
 	return 0;
 }
 
